@@ -77,7 +77,7 @@ export async function sendVerifyPrompt(
 
   const resp = await postToTelegramApi(botToken, 'sendMessage', {
     chat_id: fromChat.id,
-    text: '为了防止滥用，请先完成验证\n点击下方按钮完成验证后即可给凉心发送消息',
+    text: '为了防止滥用，请先完成验证\n点击下方按钮完成验证后即可给oa发送消息',
     reply_markup: keyboard,
   });
 
