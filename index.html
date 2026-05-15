@@ -1,118 +1,64 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>oa的传话筒</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>oa验证</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <style>
-    @font-face {
-	 font-family: LxovoFont;
-	 src: url(https://npm.elemecdn.com/ethan4116-blog/lib/font/ZhuZiAWan.ttf);
-	 font-weight: 400;
-	 font-style: normal;
-	 font-display: swap
-   }
-    :root {
-      --bg: var(--tg-theme-bg-color, #17212b);
-      --fg: var(--tg-theme-text-color, #ffffff);
-      --hint: var(--tg-theme-hint-color, #a0a0a0);
-      --card: var(--tg-theme-secondary-bg-color, #2b2d31);
-      --ok: #4cd964;
-      --err: #ff3b30;
-      --border: rgba(255,255,255,.1);
-    }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: LxovoFont, sans-serif;
-      background: var(--bg);
-      color: var(--fg);
-      padding: 20px;
-    }
-    .card {
-      max-width: 400px;
-      width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 30px 24px;
-      background: var(--card);
-      box-shadow: 0 10px 40px rgba(0,0,0,.3);
-    }
-    .title { font-size: 22px; margin-bottom: 10px; }
-    .desc { color: var(--hint); font-size: 14px; margin-bottom: 25px; }
-    .turnstile-box { display: flex; justify-content: center; margin-top: 10px; }
-    .msg { margin-top: 20px; font-size: 14px; text-align: center; }
+    body{margin:0;background:#17212b;color:#fff;font-family:Arial;padding:20px;display:flex;justify-content:center;align-items:center;height:100vh;box-sizing:border-box}
+    .box{max-width:380px;width:100%;background:#222;border-radius:16px;padding:24px;text-align:center}
+    .title{font-size:20px;margin-bottom:8px}
+    .desc{color:#aaa;font-size:14px;margin-bottom:20px}
+    #msg{margin-top:16px;font-size:14px}
+    .cf-turnstile{display:flex;justify-content:center}
   </style>
 </head>
 <body>
-<div class="card">
-  <div class="title">请先完成人机验证</div>
-  <div class="desc">通过验证后即可继续与 oa 对话</div>
-
-  <div class="turnstile-box">
-    <div
-      class="cf-turnstile"
-      data-sitekey="0x4AAAAAAADPby8fiJUYElmcE"
-      data-callback="onTurnstileSuccess"
-      data-error-callback="onTurnstileError"
-    ></div>
+<div class="box">
+  <div class="title">完成验证即可继续</div>
+  <div class="desc">与 oa 对话</div>
+  <div class="cf-turnstile"
+    data-sitekey="0x4AAAAAAADPby8fiJUYElmcE"
+    data-callback="ok"
+    data-error-callback="err">
   </div>
-  <div id="message" class="msg"></div>
+  <div id="msg"></div>
 </div>
 
 <script>
-  const tg = window.Telegram?.WebApp;
-  if (!tg) {
-    document.getElementById("message").innerText = "请在 Telegram 中打开";
-    return;
-  }
-  tg.ready();
-  tg.expand();
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
 
-  // ======================
-  // 你的配置（已帮你填好）
-  // ======================
-  const API_BASE = "https://tgbotoa.oachat6.workers.dev";
-  const PREFIX = "Oachatbot";
-  const API_URL = `${API_BASE}/${PREFIX}/api/verify`;
+function msg(text, isErr){
+  document.getElementById("msg").innerText = text;
+  document.getElementById("msg").style.color = isErr ? "#ff5555" : "#4cd964";
+}
 
-  function showMsg(text, isError = false) {
-    const el = document.getElementById("message");
-    el.innerText = text;
-    el.style.color = isError ? "var(--err)" : "var(--ok)";
-  }
-
-  async function onTurnstileSuccess(token) {
-    showMsg("验证中...");
-    try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          initData: tg.initData,
-          turnstileToken: token
-        })
-      });
-      const data = await res.json();
-      if (data.success) {
-        showMsg("验证成功！即将关闭…");
-        setTimeout(() => tg.close(), 1600);
-      } else {
-        showMsg("验证失败：" + data.error, true);
-      }
-    } catch (e) {
-      showMsg("网络错误，请重试", true);
+async function ok(token){
+  msg("验证中...");
+  try {
+    const res = await fetch("https://tgbotoa.oachat6.workers.dev/Oachatbot/api/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData: tg?.initData, turnstileToken: token })
+    });
+    const data = await res.json();
+    if (data.success) {
+      msg("验证成功！关闭中...");
+      setTimeout(() => tg?.close(), 1500);
+    } else {
+      msg("失败：" + data.error, true);
     }
+  } catch(e) {
+    msg("网络错误", true);
   }
+}
 
-  function onTurnstileError() {
-    showMsg("验证出错，请刷新重试", true);
-  }
+function err(){
+  msg("验证出错，请重试", true);
+}
 </script>
 </body>
 </html>
