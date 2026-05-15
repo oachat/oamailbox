@@ -1,64 +1,185 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>oa验证</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>oa的传话筒</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <style>
-    body{margin:0;background:#17212b;color:#fff;font-family:Arial;padding:20px;display:flex;justify-content:center;align-items:center;height:100vh;box-sizing:border-box}
-    .box{max-width:380px;width:100%;background:#222;border-radius:16px;padding:24px;text-align:center}
-    .title{font-size:20px;margin-bottom:8px}
-    .desc{color:#aaa;font-size:14px;margin-bottom:20px}
-    #msg{margin-top:16px;font-size:14px}
-    .cf-turnstile{display:flex;justify-content:center}
+    @font-face {
+	 font-family: LxovoFont;
+	 src: url(https://npm.elemecdn.com/ethan4116-blog/lib/font/ZhuZiAWan.ttf);
+	 font-weight: 400;
+	 font-style: normal;
+	 font-display: swap
+   }
+    :root {
+      --bg: var(--tg-theme-bg-color, #525459);
+      --fg: var(--tg-theme-text-color, #e2e8f0);
+      --hint: var(--tg-theme-hint-color, #94a3b8);
+      --card: var(--tg-theme-secondary-bg-color, rgba(255,255,255,.05));
+      --ok: var(--tg-theme-link-color, #38bdf8);
+      --err: var(--tg-theme-destructive-text-color, #f87171);
+      --border: rgba(255,255,255,.08);
+      overflow: hidden;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: LxovoFont;
+      background: var(--bg);
+      color: var(--fg);
+      padding: 20px;
+    }
+    .card {
+      position: relative;
+      max-width: 420px;
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px 22px;
+      background: var(--card);
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    }
+    .hint { color: var(--hint); font-size: 13px; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 6px; }
+    .title { font-size: 24px; margin: 0 0 8px 0; color: var(--fg); }
+    .desc { color: var(--hint); font-size: 14px; margin-bottom: 18px; }
+    .msg { margin-top: 12px; font-size: 14px; text-align: center; }
+    .turnstile-box { display: flex; justify-content: center; margin-top: 12px; }
+    .user-info { display: none; margin-bottom: 16px; padding: 12px; border-radius: 12px; background: rgba(255,255,255,.04); }
+    .user-info.show { display: block; }
+    .avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); }
+    .avatar-placeholder { width: 44px; height: 44px; border-radius: 50%; background: var(--ok); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; color: var(--bg); flex-shrink: 0; }
+    .user-name { font-size: 15px; font-weight: 500; color: var(--fg); }
+    .user-id { font-size: 12px; color: var(--hint); }
+    .success-card { display: none; text-align: center; align-items: center; justify-content: center; min-height: 200px; }
+    .success-card.show { display: flex; flex-direction: column; }
+    .success-card .avatar, .success-card .avatar-placeholder { width: 64px; height: 64px; margin: 0 auto 12px; font-size: 24px; }
+    .success-card .greeting { font-size: 16px; color: var(--fg); margin-bottom: 4px; }
+    .success-card .sub { font-size: 13px; color: var(--hint); }
+    .verify-content { transition: opacity 0.3s; }
+    .verify-content.hide { opacity: 0; display: none; }
   </style>
 </head>
 <body>
-<div class="box">
-  <div class="title">完成验证即可继续</div>
-  <div class="desc">与 oa 对话</div>
-  <div class="cf-turnstile"
-    data-sitekey="0x4AAAAAAADPby8fiJUYElmcE"
-    data-callback="ok"
-    data-error-callback="err">
+<div class="card">
+  <div id="verify-content" class="verify-content">
+    <div class="hint">SECURITY CHECK</div>
+    <div id="user-info" class="user-info"></div>
+    <h1 class="title">请先完成人机验证~</h1>
+    <div class="desc">通过验证后即可继续与oa对话</div>
+
+    <div class="turnstile-box">
+      <div
+        class="cf-turnstile"
+        data-sitekey="0x4AAAAAAADPby8fiJUYElmcE"
+        data-callback="onTurnstileSuccess"
+        data-error-callback="onTurnstileError"
+      ></div>
+    </div>
+    <div id="message" class="msg"></div>
   </div>
-  <div id="msg"></div>
+  <div id="success-card" class="success-card"></div>
 </div>
 
 <script>
-const tg = window.Telegram?.WebApp;
-if (tg) { tg.ready(); tg.expand(); }
+  // ======================
+  // 已为你配置正确地址！
+  // ======================
+  const params = new URLSearchParams(location.search);
+  const API_BASE = params.get("api_base") || "https://oamailbox.oachat66.workers.dev";
+  const PREFIX = params.get("prefix") || "Oachatbot";
+  const API_URL = `${API_BASE}/${PREFIX}/api/verify`;
 
-function msg(text, isErr){
-  document.getElementById("msg").innerText = text;
-  document.getElementById("msg").style.color = isErr ? "#ff5555" : "#4cd964";
-}
-
-async function ok(token){
-  msg("验证中...");
-  try {
-    const res = await fetch("https://tgbotoa.oachat6.workers.dev/Oachatbot/api/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ initData: tg?.initData, turnstileToken: token })
-    });
-    const data = await res.json();
-    if (data.success) {
-      msg("验证成功！关闭中...");
-      setTimeout(() => tg?.close(), 1500);
-    } else {
-      msg("失败：" + data.error, true);
-    }
-  } catch(e) {
-    msg("网络错误", true);
+  function showMsg(type, text) {
+    const box = document.getElementById("message");
+    box.style.color = type === "error" ? "var(--err)" : "var(--ok)";
+    box.textContent = text;
   }
-}
 
-function err(){
-  msg("验证出错，请重试", true);
-}
+  async function submit(WebApp, turnstileToken) {
+    try {
+      const initData = WebApp.initData;
+      if (!initData) {
+        showMsg("error", "无法获取 Telegram 用户信息，请在 Telegram 中打开此页面。");
+        return;
+      }
+      showMsg("success", "验证中...");
+      const resp = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initData, turnstileToken })
+      });
+      const data = await resp.json();
+      if (data.success) {
+        showSuccess(WebApp, data.photoUrl);
+        setTimeout(() => WebApp.close(), 2000);
+      } else {
+        showMsg("error", `验证失败：${data.error || "未知错误"}`);
+      }
+    } catch (e) {
+      showMsg("error", "网络错误，请稍后重试。");
+    }
+  }
+
+  function getUserInfo(WebApp) {
+    const user = WebApp?.initDataUnsafe?.user;
+    if (!user) return null;
+    return {
+      name: [user.first_name, user.last_name].filter(Boolean).join(' '),
+      photo: user.photo_url || null,
+      id: user.id,
+    };
+  }
+
+  function renderAvatar(user) {
+    if (user.photo) {
+      return `<img class="avatar" src="${user.photo}" alt="" />`;
+    }
+    const initial = (user.name || '?')[0].toUpperCase();
+    return `<div class="avatar-placeholder">${initial}</div>`;
+  }
+
+  function showSuccess(WebApp, serverPhotoUrl) {
+    const user = getUserInfo(WebApp);
+    if (user && serverPhotoUrl) user.photo = serverPhotoUrl;
+    const card = document.getElementById('success-card');
+    document.getElementById('verify-content').classList.add('hide');
+    card.innerHTML = user
+      ? `${renderAvatar(user)}<div class="greeting">Hi, ${user.name}</div><div class="sub">验证成功，窗口即将关闭</div>`
+      : `<div class="greeting">验证成功</div><div class="sub">窗口即将关闭</div>`;
+    card.classList.add('show');
+  }
+
+  function showUserInfo(user) {
+    const el = document.getElementById('user-info');
+    el.innerHTML = `<div class="user-name">${user.name}</div><div class="user-id">ID: ${user.id}</div>`;
+    el.classList.add('show');
+  }
+
+  const WebApp = window.Telegram?.WebApp;
+  if (WebApp) {
+    WebApp.ready();
+    WebApp.expand();
+    window.__tgWebApp = WebApp;
+    const user = getUserInfo(WebApp);
+    if (user) showUserInfo(user);
+  } else {
+    showMsg("error", "无法加载 Telegram SDK，请在 Telegram 中打开此页面。");
+  }
+
+  window.onTurnstileSuccess = (token) => {
+    if (!window.__tgWebApp) {
+      showMsg("error", "未获取到 Telegram 上下文，请在 Telegram 中打开。");
+      return;
+    }
+    submit(window.__tgWebApp, token);
+  };
+  window.onTurnstileError = () => showMsg("error", "Turnstile 验证失败，请重试。");
 </script>
 </body>
 </html>
