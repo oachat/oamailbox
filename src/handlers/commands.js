@@ -21,9 +21,9 @@ export async function handleStartCommand(
   workerOrigin, prefix,
 ) {
   let introduction =
-    '*欢迎使用凉心的传话筒 📪*' +
+    '*欢迎使用oa的传话筒 📪*' +
     '\n>我是一个双向私聊机器人\\.' +
-    '\n>可以帮助你与凉心进行沟通\\.' +
+    '\n>可以帮助你与oa进行沟通\\.' +
     '\n*📌 使用说明*:' +
     '\n>*表情回应*:' +
     '\n>  下面的表情 🕊 代表消息已经成功转发\\.' +
@@ -44,7 +44,7 @@ export async function handleStartCommand(
     '\n' +
     '\n*⚡️ 注意事项*:' +
     '\n>• 避免重复发送相同的消息' +
-    '\n>• 请耐心等待凉心回复' +
+    '\n>• 请耐心等待oa回复' +
     '\n>• 若有急事请说明情况' +
     '\n>• 请保持友善和礼貌的交流态度' +
     '\n' +
