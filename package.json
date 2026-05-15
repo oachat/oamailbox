@@ -1,0 +1,15 @@
+{
+  "name": "oamailbox",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Mailbox - A personal two-way private messaging Telegram bot on Cloudflare Workers",
+  "main": "src/worker.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

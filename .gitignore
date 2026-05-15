@@ -1,0 +1,13 @@
+# OS General
+Thumbs.db
+.DS_Store
+
+# Develop tools
+node_modules/
+.wrangler/
+.vscode/
+.idea/
+*.swp
+
+# Environment
+.dev.vars

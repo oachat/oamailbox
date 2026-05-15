@@ -1,0 +1,31 @@
+{
+	"name": "oamailbox",
+	"main": "src/worker.js",
+	"compatibility_date": "2025-04-01",
+	"keep_vars": true,
+	// Non-secret config
+	// Secrets (BOT_TOKEN, SECRET_TOKEN, TURNSTILE_SECRET) are set via:
+	//   wrangler secret put BOT_TOKEN
+	//   wrangler secret put SECRET_TOKEN
+	//   wrangler secret put TURNSTILE_SECRET
+	"vars": {
+		"MINIAPP_URL": "https://telegram-chatbot.52lx.pw",
+		"PREFIX": "oachat",
+		"OWNER_UID": "7454788564"
+	},
+	"kv_namespaces": [
+		{
+			"binding": "KV",
+			"id": "15d599aad31846a099684ebe74982037"
+		}
+	],
+	"placement": {
+		"mode": "smart"
+	},
+	"observability": {
+		"enabled": true,
+		"logs": {
+			"head_sampling_rate": 1
+		}
+	}
+}
