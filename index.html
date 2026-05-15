@@ -76,7 +76,7 @@
     <div class="turnstile-box">
       <div
         class="cf-turnstile"
-        data-sitekey="0x4AAAAAAADPby8fiJUYElmcE"
+        data-sitekey="0x4AAAAAADPby8fiJUYElmcE"
         data-callback="onTurnstileSuccess"
         data-error-callback="onTurnstileError"
       ></div>
@@ -92,7 +92,7 @@
   // ======================
   const params = new URLSearchParams(location.search);
   const API_BASE = params.get("api_base") || "https://oamailbox.oachat66.workers.dev";
-  const PREFIX = params.get("prefix") || "Oachatbot";
+  const PREFIX = params.get("prefix") || "oachat";
   const API_URL = `${API_BASE}/${PREFIX}/api/verify`;
 
   function showMsg(type, text) {
