@@ -60,12 +60,12 @@ export async function handleVerifyApi(request, env, config) {
       await postToTelegramApi(botToken, 'editMessageText', {
         chat_id: initDataResult.userId,
         message_id: promptMessageId,
-        text: '已完成验证，现在可以继续和凉心对话了~',
+        text: '已完成验证，现在可以继续和oa对话了~',
       });
     } else {
       await postToTelegramApi(botToken, 'sendMessage', {
         chat_id: initDataResult.userId,
-        text: '已完成验证，现在可以继续和凉心对话了~',
+        text: '已完成验证，现在可以继续和oa对话了~',
       });
     }
 
