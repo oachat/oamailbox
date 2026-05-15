@@ -9,7 +9,7 @@
 	//   wrangler secret put SECRET_TOKEN
 	//   wrangler secret put TURNSTILE_SECRET
 	"vars": {
-		"MINIAPP_URL": "https://telegram-chatbot.52lx.pw",
+		"MINIAPP_URL": "https://oamailbox.pages.dev",
 		"PREFIX": "oachat",
 		"OWNER_UID": "7454788564"
 	},
