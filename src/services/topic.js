@@ -372,7 +372,7 @@ export async function banTopic(botToken, env, message, isSilent) {
     text:
       '⛔️ *消息已被拒收*\n\n' +
       '很抱歉 由于您的不当行为\n' +
-      '凉心已将您关入小黑屋\n' +
+      'oa已将您关入小黑屋\n' +
       '暂时无法继续对话\n\n' +
       'TAT',
     parse_mode: 'MarkdownV2',
@@ -404,7 +404,7 @@ export async function unbanTopic(botToken, env, message, isSilent) {
     text:
       '✅ *消息限制已解除*\n\n' +
       '由于您表现良好\n' +
-      '凉心将你从小黑屋中放了出来\n' +
+      'oa将你从小黑屋中放了出来\n' +
       '消息将继续转发\n\n' +
       'OvO',
     parse_mode: 'MarkdownV2',
